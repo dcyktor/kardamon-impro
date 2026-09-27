@@ -1,0 +1,28 @@
+// Podstawowe dane strony. Tekst "O nas" jest w pliku o-nas.md obok.
+export const site = {
+  name: 'Kardamon',
+  kicker: 'Teatr improwizacji',
+  tagline: 'Sceny, które nie istnieją, dopóki nie wejdziemy na scenę. Bez scenariusza, bez drugiej szansy – a każdy wieczór jest inny.',
+  footerText: 'Teatr improwizacji z Wrocławia',
+  email: 'kardamon.impro@gmail.com',
+  ticketsUrl: 'https://app.evently.pl/organizers/25295-kardamon-impro', // ogólny link do biletów
+
+  // Zdjęcia dobierają się same po nazwie pliku w src/assets/sklad/:
+  // imię-nazwisko małymi literami, bez polskich znaków, np. 'Rafał Kwaśnik' -> rafal-kwasnik.jpg.
+  // Najlepiej kwadratowe 1:1 (kafelki są kwadratowe). Brak pliku = placeholder.
+  team: [
+    { name: 'Daniel Cyktor' },
+    { name: 'Patryk Wawok' },
+    { name: 'Maciej Olszowy' },
+    { name: 'Rafał Kwaśnik' },
+    { name: 'Patryk Kudyk' },
+  ],
+
+  // icon: instagram | facebook | tiktok | youtube (ikony w src/components/Icon.astro)
+  socials: [
+    { icon: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/kardamon.impro' },
+    { icon: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/kardamon.impro' },
+    { icon: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@kardamon.impro' },
+    { icon: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@kardamonimpro' },
+  ],
+} as const;

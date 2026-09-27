@@ -1,0 +1,19 @@
+# wynik builda
+dist/
+# typy generowane przez Astro
+.astro/
+# zależności
+node_modules/
+# logi
+npm-debug.log*
+# zmienne środowiskowe
+.env
+.env.*
+# macOS
+.DS_Store
+# IDE
+.idea/
+.vscode/
+# Claude Code: notatki i ustawienia lokalne, nie do publicznego repo
+CLAUDE.md
+.claude/

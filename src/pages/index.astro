@@ -1,0 +1,268 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { existsSync, readdirSync } from 'node:fs';
+import { site } from '../data/site';
+import { Content as About } from '../data/o-nas.md';
+
+// "Dzisiaj" w polskiej strefie czasowej, niezależnie od serwera, na którym idzie build.
+const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw' }).format(new Date());
+
+// Obrazki dopasowywane po nazwie pliku (bez rozszerzenia, małymi literami).
+// Astro przy buildzie zmniejsza je i konwertuje do WebP.
+type Images = Record<string, { default: ImageMetadata }>;
+const baseName = (path: string) => path.split('/').pop()!.replace(/\.[^.]+$/, '').toLowerCase();
+const byName = (files: Images) => new Map(Object.entries(files).map(([path, m]) => [baseName(path), m.default]));
+const warnUnmatched = (label: string, images: Map<string, ImageMetadata>, expected: string[]) => {
+  for (const name of images.keys()) {
+    if (!expected.includes(name)) {
+      console.warn(`[${label}] ${name} nie pasuje do niczego (oczekiwane nazwy: ${expected.join(', ')})`);
+    }
+  }
+};
+
+// HEIC (domyślny format zdjęć z iPhone'a) nie przechodzi przez optymalizację obrazków: ostrzeż, zamiast cicho pominąć.
+for (const dir of ['src/assets/hero', 'src/assets/sklad', 'src/content/events']) {
+  const heic = existsSync(dir) ? readdirSync(dir).filter((f) => /\.hei[cf]$/i.test(f)) : [];
+  if (heic.length > 0) console.warn(`[obrazki] ${dir}: ${heic.join(', ')} – format HEIC nie jest obsługiwany, zapisz jako JPG`);
+}
+
+// Grafika wydarzenia: plik obok .md o tej samej nazwie, np. 2026-10-19-western.md + 2026-10-19-western.jpg
+const eventImages = byName(import.meta.glob<{ default: ImageMetadata }>(
+  '../content/events/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', { eager: true }));
+const entries = await getCollection('events');
+const entryName = (e: (typeof entries)[number]) => baseName(e.filePath ?? e.id);
+warnUnmatched('wydarzenia', eventImages, entries.map(entryName));
+
+const events = entries
+  .map((e) => ({ ...e.data, image: eventImages.get(entryName(e)) }))
+  .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+// Wydarzenie jest "nadchodzące" do końca swojego dnia.
+const upcoming = events.filter((e) => e.date >= today);
+const past = events.filter((e) => e.date < today).reverse(); // najnowsze pierwsze
+
+const asDate = (d: string) => new Date(`${d}T12:00:00Z`);
+const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pl-PL', { timeZone: 'UTC', ...o });
+const day = (d: string) => fmt({ day: '2-digit' }).format(asDate(d));
+const month = (d: string) => fmt({ month: 'short' }).format(asDate(d)).replace('.', '').toUpperCase();
+const longDate = (d: string) => fmt({ day: 'numeric', month: 'long', year: 'numeric' }).format(asDate(d));
+const weekday = (d: string) => fmt({ weekday: 'long' }).format(asDate(d));
+
+// Zdjęcia składu: src/assets/sklad/<imie-nazwisko>.jpg, dopasowane po imieniu i nazwisku.
+const teamPhotos = byName(import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/sklad/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', { eager: true }));
+const slug = (name: string) => name.toLowerCase().replace(/ł/g, 'l').normalize('NFD')
+  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const team = site.team.map((m) => ({ ...m, photo: teamPhotos.get(slug(m.name)) }));
+warnUnmatched('skład', teamPhotos, site.team.map((m) => slug(m.name)));
+
+// Karuzela w hero: wszystkie zdjęcia z src/assets/hero/, w kolejności alfabetycznej nazw plików.
+// Bez zdjęć hero ma zielone tło jak dotąd.
+const heroPhotos = Object.entries(import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/hero/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', { eager: true }))
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, m]) => m.default);
+---
+<Base>
+  <header class="nav">
+    <div class="inner">
+      <a href="#top" class="brand serif"><img src="/logo.png" alt="" width="40" height="40" />{site.name}</a>
+      <nav class="nav-links" aria-label="Główne">
+        <a href="#wydarzenia">Wydarzenia</a>
+        <a href="#o-nas">O nas</a>
+        <a href={site.ticketsUrl} target="_blank" rel="noopener">Bilety</a>
+        <a href="#kontakt">Kontakt</a>
+      </nav>
+      <a href={site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety</a>
+    </div>
+  </header>
+
+  <main>
+    <section class:list={['hero', { 'has-photos': heroPhotos.length > 0 }]} id="top">
+      {heroPhotos.length > 0 && (
+        <div class="hero-slides" aria-hidden="true">
+          {heroPhotos.map((img, i) => (
+            <Image src={img} alt="" width={1920} widths={[768, 1280, 1920]} sizes="100vw"
+              class:list={['hero-slide', { active: i === 0 }]}
+              loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : 'auto'} />
+          ))}
+        </div>
+      )}
+      <div class="inner">
+        <div class="hero-content">
+          <div class="hero-logo"><img src="/logo.png" alt={`Logo ${site.name}`} width="64" height="64" /></div>
+          <span class="kicker">{site.kicker}</span>
+          <h1 class="serif">{site.name}</h1>
+          <p>{site.tagline}</p>
+          <a href={site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety</a>
+          <div class="icons">
+            {site.socials.map((s) => (
+              <a href={s.url} class="icon-link" aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} /></a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section events" id="wydarzenia">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Co gramy</span>
+          <h2 class="serif">Wydarzenia</h2>
+        </div>
+
+        <!-- Zakładki pojawiają się dopiero z JS; bez JS obie listy są widoczne jedna pod drugą -->
+        <div class="tabs" role="tablist" aria-label="Wydarzenia" hidden>
+          <button role="tab" id="tab-upcoming" aria-controls="panel-upcoming" aria-selected="true">Nadchodzące</button>
+          <button role="tab" id="tab-past" aria-controls="panel-past" aria-selected="false" tabindex="-1">Zakończone</button>
+        </div>
+
+        <div id="panel-upcoming" role="tabpanel" aria-labelledby="tab-upcoming">
+          <h3 class="kicker no-js-label">Nadchodzące</h3>
+          {upcoming.length === 0 ? (
+            <p class="empty">Na razie nie mamy zaplanowanych występów. Nowe terminy ogłaszamy w social mediach.</p>
+          ) : (
+            <ul class="cards">
+              {upcoming.map((e) => (
+                <li class="card">
+                  {e.image && <Image src={e.image} alt="" width={Math.min(e.image.width, 720)} class="card-img" />}
+                  <div class="card-top">
+                    <div class="date-badge" aria-hidden="true"><span class="d">{day(e.date)}</span><span class="m">{month(e.date)}</span><span class="y">{e.date.slice(0, 4)}</span></div>
+                    <div class="card-meta">
+                      <span class="sr">{longDate(e.date)}, </span>
+                      <span class="time">{weekday(e.date)}, {e.time}</span>
+                      <span class="venue">{e.venue}, {e.city}</span>
+                    </div>
+                  </div>
+                  <div class="card-title serif">{e.title}</div>
+                  {e.subtitle && <div class="card-subtitle">{e.subtitle}</div>}
+                  {e.description && <p class="card-desc">{e.description}</p>}
+                  {e.soldOut ? <span class="kicker status">Wyprzedane</span>
+                    : e.free ? <span class="kicker status">Wstęp wolny</span>
+                    : <a href={e.tickets ?? site.ticketsUrl} class="btn-ghost" target="_blank" rel="noopener">Bilety<span class="sr"> na {e.title}</span></a>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div id="panel-past" role="tabpanel" aria-labelledby="tab-past">
+          <h3 class="kicker no-js-label">Zakończone</h3>
+          {past.length === 0 ? (
+            <p class="empty">Tu pojawią się zagrane już spektakle.</p>
+          ) : (
+            <ul class="cards">
+              {past.map((e) => (
+                <li class="card past">
+                  {e.image && <Image src={e.image} alt="" width={Math.min(e.image.width, 720)} class="card-img" />}
+                  <div class="card-top">
+                    <div class="date-badge" aria-hidden="true"><span class="d">{day(e.date)}</span><span class="m">{month(e.date)}</span><span class="y">{e.date.slice(0, 4)}</span></div>
+                    <div class="card-meta">
+                      <span class="sr">{longDate(e.date)}, </span>
+                      <span class="venue">{e.venue}, {e.city}</span>
+                    </div>
+                  </div>
+                  <div class="card-title serif">{e.title}</div>
+                  {e.subtitle && <div class="card-subtitle">{e.subtitle}</div>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <section class="section about" id="o-nas">
+      <div class="container">
+        <div class="about-text">
+          <span class="kicker">Kim jesteśmy</span>
+          <h2 class="serif">O nas</h2>
+          <div class="prose"><About /></div>
+        </div>
+        {site.team.length > 0 && (
+          <div class="about-text" style="max-width:none">
+            <span class="kicker">Skład</span>
+            <ul class="cast">
+              {team.map((m) => (
+                <li>
+                  {m.photo
+                    ? <div class="photo"><Image src={m.photo} alt={m.name} width={600} /></div>
+                    : <><div class="photo placeholder"><Icon name="person" size={32} /></div><span class="name">{m.name}</span></>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="kontakt">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <div class="brand-row serif"><img src="/logo.png" alt="" width="32" height="32" />{site.name}</div>
+        <p>{site.footerText}</p>
+      </div>
+      <div class="footer-col">
+        <span class="kicker">Nawigacja</span>
+        <a href="#wydarzenia">Wydarzenia</a>
+        <a href="#o-nas">O nas</a>
+        <a href={site.ticketsUrl} target="_blank" rel="noopener">Bilety</a>
+      </div>
+      <div class="footer-col">
+        <span class="kicker">Kontakt</span>
+        {site.email.includes('@') ? <a href={`mailto:${site.email}`}>{site.email}</a> : <span>{site.email}</span>}
+        <div class="icons">
+          {site.socials.map((s) => (
+            <a href={s.url} class="icon-link light" aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} size={16} /></a>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div class="copyright">© {new Date().getFullYear()} {site.name}</div>
+  </footer>
+
+  <script is:inline>
+    // Zakładki Nadchodzące / Zakończone
+    (function () {
+      var tablist = document.querySelector('.tabs');
+      var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+      tablist.hidden = false;
+      document.querySelectorAll('.no-js-label').forEach(function (el) { el.hidden = true; });
+      function select(tab) {
+        tabs.forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute('aria-selected', on);
+          t.tabIndex = on ? 0 : -1;
+          document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+        });
+      }
+      tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () { select(t); });
+        t.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            var n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+            select(n); n.focus();
+          }
+        });
+      });
+      select(tabs[0]);
+    })();
+
+    // Karuzela w hero: co 10 s płynne przejście do kolejnego zdjęcia (bez animacji, jeśli system prosi o mniej ruchu)
+    (function () {
+      var slides = document.querySelectorAll('.hero-slide');
+      if (slides.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var i = 0;
+      setInterval(function () {
+        slides[i].classList.remove('active');
+        i = (i + 1) % slides.length;
+        slides[i].classList.add('active');
+      }, 10000);
+    })();
+  </script>
+</Base>

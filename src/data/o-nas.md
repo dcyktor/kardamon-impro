@@ -1,0 +1,1 @@
+W Kardamonie rozśmieszamy i wzruszamy publikę we Wrocławiu. Gramy improwizowane spektakle bez scenariusza – wszystko dzieje się tu i teraz, na oczach widzów. Inspirujemy się sugestiami z publiczności, a każdy występ to niepowtarzalne doświadczenie.
