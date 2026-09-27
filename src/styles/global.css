@@ -83,7 +83,10 @@ img { max-width: 100%; }
 .hero-content { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 28px; }
 /* Karuzela zdjęć pod zielonym, matowym "szkłem" na całą szerokość (tylko gdy są zdjęcia w src/assets/hero/) */
 .hero-slides { position: absolute; inset: 0; background: var(--ink-deep); }
-.hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; opacity: 0; transition: opacity 1.2s ease; }
+.hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 15%; opacity: 0; transition: opacity 1.2s ease; }
+/* Zdjęcia 4:3 w szerokim hero: tniemy głównie z dołu (twarze są wysoko), a na szerokich ekranach hero rośnie z szerokością */
+.hero.has-photos { display: flex; align-items: center; min-height: min(52vw, 88vh); }
+.hero.has-photos .inner { width: 100%; }
 .hero-slide.active { opacity: 1; }
 .hero-slides::after {
   content: ''; position: absolute; inset: 0;

@@ -2,7 +2,9 @@
 export const site = {
   name: 'Kardamon',
   kicker: 'Teatr improwizacji',
-  tagline: 'Sceny, które nie istnieją, dopóki nie wejdziemy na scenę. Bez scenariusza, bez drugiej szansy – a każdy wieczór jest inny.',
+  tagline: 'Komedia, która powstaje na Waszych oczach.',
+  // Opis strony w wynikach Google (meta description), osobny od krótkiego hasła
+  description: 'Kardamon – teatr improwizacji z Wrocławia. Komediowe spektakle bez scenariusza, tworzone z sugestii publiczności.',
   footerText: 'Teatr improwizacji z Wrocławia',
   email: 'kardamon.impro@gmail.com',
   ticketsUrl: 'https://app.evently.pl/organizers/25295-kardamon-impro', // ogólny link do biletów
