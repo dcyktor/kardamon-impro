@@ -7,6 +7,7 @@ venue: "Sztuka na Miejscu"
 address: "Łaciarska 4"
 description: "Wasze sugestie staną się fundamentem opowieści o szeryfach, banitach, złocie i honorze."
 tickets: "https://app.evently.pl/events/15341-kardamon-kurz-konie-i-zle-decyzje-improwizowany-western"
+price: 35
 ---
 
 Komediowy spektakl improwizowany! Bez scenariusza, tworzony na oczach widowni.

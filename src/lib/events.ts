@@ -26,6 +26,17 @@ export const startIso = (date: string, time: string) => `${date}T${time}:00${off
 // Pliki wydarzeń nie mają godziny końca; spektakle trwają zwykle ok. 2 godzin (tyle podaje Evently).
 export const DURATION_MS = 2 * 60 * 60 * 1000;
 
+// Koniec wydarzenia (start + 2 h) w ISO 8601 z przesunięciem strefy; poprawnie przechodzi przez północ.
+export const endIso = (date: string, time: string) => {
+  const end = new Date(new Date(startIso(date, time)).getTime() + DURATION_MS);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(end).map((p) => [p.type, p.value]),
+  );
+  return startIso(`${parts.year}-${parts.month}-${parts.day}`, `${parts.hour}:${parts.minute}`);
+};
+
 export const eventPath = (id: string) => `/wydarzenia/${id}/`;
 export const calendarPath = (id: string) => `/kalendarz/${id}.ics`;
 export const mapsUrl = (venue: string, address: string, city: string) =>

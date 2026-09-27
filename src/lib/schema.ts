@@ -1,7 +1,7 @@
 // Dane strukturalne schema.org dla Google i asystentów AI: grupa oraz spektakle.
 import { getImage } from 'astro:assets';
 import { site } from '../data/site';
-import { eventPath, startIso, type EventItem } from './events';
+import { endIso, eventPath, startIso, type EventItem } from './events';
 
 const absolute = (path: string, base: URL) => new URL(path, base).href;
 
@@ -23,6 +23,7 @@ export const eventSchema = async (e: EventItem, base: URL) => ({
   url: absolute(eventPath(e.id), base),
   ...((e.description ?? e.subtitle) && { description: e.description ?? e.subtitle }),
   startDate: startIso(e.date, e.time),
+  endDate: endIso(e.date, e.time),
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   location: {
@@ -37,6 +38,6 @@ export const eventSchema = async (e: EventItem, base: URL) => ({
     '@type': 'Offer',
     url: e.tickets ?? site.ticketsUrl,
     availability: `https://schema.org/${e.soldOut ? 'SoldOut' : 'InStock'}`,
-    ...(e.free && { price: 0, priceCurrency: 'PLN' }),
+    ...(e.free ? { price: 0, priceCurrency: 'PLN' } : e.price !== undefined && { price: e.price, priceCurrency: 'PLN' }),
   },
 });

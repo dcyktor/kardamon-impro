@@ -31,6 +31,7 @@ venue: "Sztuka na Miejscu"
 address: "Łaciarska 4"
 description: "Jedno krótkie zdanie, które pokaże się na karcie na stronie głównej."
 tickets: "https://app.evently.pl/events/..."
+price: 35
 ---
 
 Tu wklej pełny opis spektaklu, np. z Evently.
@@ -55,6 +56,7 @@ Co oznaczają pola:
 | `city` | nie | domyślnie Wrocław |
 | `description` | nie | jedno zdanie na kartę na stronie głównej |
 | `tickets` | nie | link do biletów na to wydarzenie; bez niego przyciski prowadzą na ogólną stronę na Evently |
+| `price` | nie | cena biletu w zł, np. `35` albo `35,50`; na stronie jej nie widać, ale Google pokazuje ją przy wydarzeniu w wynikach wyszukiwania |
 | `soldOut` | nie | `true` = zamiast przycisku biletów napis „Wyprzedane” |
 | `free` | nie | `true` = napis „Wstęp wolny” zamiast przycisku biletów |
 

@@ -51,6 +51,16 @@ const eventTime = z.union([z.string(), z.number()]).transform((value, ctx) => {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 });
 
+// Cena biletu w zł: 35, 35,50 albo "35 zł". Widzi ją Google w danych o wydarzeniu.
+const eventPrice = z.union([z.number(), z.string()]).transform((value, ctx) => {
+  const price = typeof value === 'number' ? value : Number(value.replace(/zł/i, '').replace(',', '.').trim());
+  if (!Number.isFinite(price) || price < 0) {
+    ctx.addIssue({ code: 'custom', message: `Cena "${value}" – wpisz samą liczbę, np. 35 albo 35,50` });
+    return z.NEVER;
+  }
+  return price;
+});
+
 // Schemat wydarzenia – jak DTO z walidacją.
 // Jeśli w pliku .md zabraknie pola albo będzie w złym formacie, build się zatrzyma z czytelnym błędem.
 const events = defineCollection({
@@ -65,6 +75,7 @@ const events = defineCollection({
     city: z.string().default('Wrocław'),
     description: z.string().optional(),
     tickets: z.url().optional(), // brak = ogólny link z site.ts
+    price: eventPrice.optional(),
     soldOut: z.boolean().default(false),
     free: z.boolean().default(false),
   }),
