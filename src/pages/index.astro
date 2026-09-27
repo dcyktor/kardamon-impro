@@ -143,7 +143,7 @@ const heroPhotos = Object.entries(import.meta.glob<{ default: ImageMetadata }>(
                   {e.description && <p class="card-desc">{e.description}</p>}
                   {e.soldOut ? <span class="kicker status">Wyprzedane</span>
                     : e.free ? <span class="kicker status">Wstęp wolny</span>
-                    : <a href={e.tickets ?? site.ticketsUrl} class="btn-ghost" target="_blank" rel="noopener">Bilety<span class="sr"> na {e.title}</span></a>}
+                    : <a href={e.tickets ?? site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety<span class="sr"> na {e.title}</span></a>}
                 </li>
               ))}
             </ul>
