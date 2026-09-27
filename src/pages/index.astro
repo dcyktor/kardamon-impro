@@ -2,14 +2,12 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { existsSync, readdirSync } from 'node:fs';
 import { site } from '../data/site';
 import { Content as About } from '../data/o-nas.md';
-
-// "Dzisiaj" w polskiej strefie czasowej, niezależnie od serwera, na którym idzie build.
-const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw' }).format(new Date());
+import { calendarPath, isUpcoming, mapsUrl, startIso } from '../lib/events';
 
 // Obrazki dopasowywane po nazwie pliku (bez rozszerzenia, małymi literami).
 // Astro przy buildzie zmniejsza je i konwertuje do WebP.
@@ -38,12 +36,18 @@ const entryName = (e: (typeof entries)[number]) => baseName(e.filePath ?? e.id);
 warnUnmatched('wydarzenia', eventImages, entries.map(entryName));
 
 const events = entries
-  .map((e) => ({ ...e.data, image: eventImages.get(entryName(e)) }))
+  .map((e) => ({ ...e.data, id: e.id, image: eventImages.get(entryName(e)) }))
   .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
-// Wydarzenie jest "nadchodzące" do końca swojego dnia.
-const upcoming = events.filter((e) => e.date >= today);
-const past = events.filter((e) => e.date < today).reverse(); // najnowsze pierwsze
+const upcoming = events.filter((e) => isUpcoming(e.date));
+const past = events.filter((e) => !isUpcoming(e.date)).reverse(); // najnowsze pierwsze
+
+// Główny przycisk w hero: podtytuł i data najbliższego spektaklu, link prosto do jego biletów.
+// Kropka zamiast "na", bo podtytułów nie da się automatycznie odmienić ("na Improwizowaną Korporację").
+// Twarde spacje (\u00a0) przy kropkach: przy łamaniu na telefonie kropka i data nie zostają same w linii.
+const next = upcoming[0];
+const nextHasTickets = next && next.tickets && !next.soldOut && !next.free;
+const heroTickets = nextHasTickets ? next.tickets! : site.ticketsUrl;
 
 const asDate = (d: string) => new Date(`${d}T12:00:00Z`);
 const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pl-PL', { timeZone: 'UTC', ...o });
@@ -51,12 +55,13 @@ const day = (d: string) => fmt({ day: '2-digit' }).format(asDate(d));
 const month = (d: string) => fmt({ month: 'short' }).format(asDate(d)).replace('.', '').toUpperCase();
 const longDate = (d: string) => fmt({ day: 'numeric', month: 'long', year: 'numeric' }).format(asDate(d));
 const weekday = (d: string) => fmt({ weekday: 'long' }).format(asDate(d));
+const shortDate = (d: string) => `${Number(d.slice(8, 10))}.${d.slice(5, 7)}`; // 19.10, 5.12
 
 // Zdjęcia składu: src/assets/sklad/<imie-nazwisko>.jpg, dopasowane po imieniu i nazwisku.
 const teamPhotos = byName(import.meta.glob<{ default: ImageMetadata }>(
   '../assets/sklad/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', { eager: true }));
 const slug = (name: string) => name.toLowerCase().replace(/ł/g, 'l').normalize('NFD')
-  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const team = site.team.map((m) => ({ ...m, photo: teamPhotos.get(slug(m.name)) }));
 warnUnmatched('skład', teamPhotos, site.team.map((m) => slug(m.name)));
 
@@ -66,8 +71,46 @@ const heroPhotos = Object.entries(import.meta.glob<{ default: ImageMetadata }>(
   '../assets/hero/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', { eager: true }))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, m]) => m.default);
+
+// Dane strukturalne schema.org dla Google: grupa oraz nadchodzące spektakle (mogą pojawić się w wynikach wyszukiwania).
+const absolute = (path: string) => new URL(path, Astro.site).href;
+const performer = { '@type': 'PerformingGroup', name: site.name, url: absolute('/') };
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    ...performer,
+    description: site.description,
+    logo: absolute('/logo.png'),
+    email: site.email,
+    sameAs: site.socials.map((s) => s.url),
+  },
+  ...(await Promise.all(upcoming.map(async (e) => ({
+    '@context': 'https://schema.org',
+    '@type': 'TheaterEvent',
+    name: `${site.name}: ${e.title}`,
+    ...(e.description && { description: e.description }),
+    startDate: startIso(e.date, e.time),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
+      '@type': 'Place',
+      name: e.venue,
+      address: { '@type': 'PostalAddress', ...(e.address && { streetAddress: e.address }), addressLocality: e.city, addressCountry: 'PL' },
+    },
+    ...(e.image && { image: [absolute((await getImage({ src: e.image, format: 'jpg' })).src)] }),
+    performer,
+    organizer: performer,
+    offers: {
+      '@type': 'Offer',
+      url: e.tickets ?? site.ticketsUrl,
+      availability: `https://schema.org/${e.soldOut ? 'SoldOut' : 'InStock'}`,
+      ...(e.free && { price: 0, priceCurrency: 'PLN' }),
+    },
+  })))),
+];
 ---
 <Base>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
   <header class="nav">
     <div class="inner">
       <a href="#top" class="brand serif"><img src="/logo.png" alt="" width="40" height="40" />{site.name}</a>
@@ -98,7 +141,9 @@ const heroPhotos = Object.entries(import.meta.glob<{ default: ImageMetadata }>(
           <span class="kicker">{site.kicker}</span>
           <h1 class="serif">{site.name}</h1>
           <p>{site.tagline}</p>
-          <a href={site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety</a>
+          <a href={heroTickets} class="btn" target="_blank" rel="noopener">{nextHasTickets
+            ? <>{next.subtitle ? `Bilety\u00a0·\u00a0${next.subtitle}\u00a0·\u00a0${shortDate(next.date)}` : `Bilety na ${shortDate(next.date)}`}<span class="sr">, {next.title}</span></>
+            : 'Kup bilety'}</a>
           <div class="icons">
             {site.socials.map((s) => (
               <a href={s.url} class="icon-link" aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} /></a>
@@ -135,15 +180,20 @@ const heroPhotos = Object.entries(import.meta.glob<{ default: ImageMetadata }>(
                     <div class="card-meta">
                       <span class="sr">{longDate(e.date)}, </span>
                       <span class="time">{weekday(e.date)}, {e.time}</span>
-                      <span class="venue">{e.venue}, {e.city}</span>
+                      <span class="venue">{e.address
+                        ? <a href={mapsUrl(e.venue, e.address, e.city)} target="_blank" rel="noopener"><Icon name="pin" size={14} />{e.venue}, {e.city}<span class="sr"> (mapa)</span></a>
+                        : <>{e.venue}, {e.city}</>}</span>
                     </div>
                   </div>
                   <div class="card-title serif">{e.title}</div>
                   {e.subtitle && <div class="card-subtitle">{e.subtitle}</div>}
                   {e.description && <p class="card-desc">{e.description}</p>}
-                  {e.soldOut ? <span class="kicker status">Wyprzedane</span>
-                    : e.free ? <span class="kicker status">Wstęp wolny</span>
-                    : <a href={e.tickets ?? site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety<span class="sr"> na {e.title}</span></a>}
+                  <div class="card-actions">
+                    {e.soldOut ? <span class="kicker status">Wyprzedane</span>
+                      : e.free ? <span class="kicker status">Wstęp wolny</span>
+                      : <a href={e.tickets ?? site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety<span class="sr"> na {e.title}</span></a>}
+                    <a href={calendarPath(e.id)} class="card-cal"><Icon name="calendar" size={16} />Dodaj do kalendarza<span class="sr">: {e.title}</span></a>
+                  </div>
                 </li>
               ))}
             </ul>

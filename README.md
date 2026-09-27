@@ -28,6 +28,7 @@ subtitle: "Improwizowany Western"   # opcjonalne – mniejszy napis pod tytułem
 date: 2026-11-20
 time: "19:30"               # w cudzysłowie!
 venue: "Klub XYZ"
+address: "Ruska 46"          # opcjonalne – ulica i numer: link do mapy, dane dla Google
 city: "Wrocław"             # opcjonalne, domyślnie Wrocław
 description: "Krótki opis"  # opcjonalne
 tickets: "https://..."      # opcjonalne – brak = ogólny link z site.ts
@@ -35,6 +36,8 @@ soldOut: false              # opcjonalne – true pokazuje „Wyprzedane”
 free: false                 # opcjonalne – true pokazuje „Wstęp wolny”
 ---
 ```
+
+Dla każdego nadchodzącego wydarzenia strona sama tworzy plik „Dodaj do kalendarza” (`/kalendarz/<nazwa-pliku>.ics`, spektakl trwa w nim 2 godziny) i dane dla Google (schema.org), dzięki którym spektakl może pojawić się w wynikach wyszukiwania. Główny przycisk na górze strony podaje datę najbliższego spektaklu („Bilety · Improwizowany Western · 19.10”, a bez podtytułu „Bilety na 19.10”) i prowadzi prosto do jego biletów.
 
 Grafika wydarzenia (opcjonalna): wrzuć ją obok pliku `.md` pod tą samą nazwą, np. `2026-11-20-harold.jpg`. Na karcie pokazuje się jako kwadrat przycięty od środka, więc najlepiej od razu kwadratowa, min. 800×800 px.
 

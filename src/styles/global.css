@@ -136,7 +136,12 @@ img { max-width: 100%; }
 .card-subtitle { margin-top: -12px; font-size: 14px; font-weight: 600; color: var(--green); }
 .card.past .card-subtitle { color: var(--muted-2); }
 .card-desc { margin: -6px 0 0; font-size: 14px; line-height: 1.5; color: var(--text); }
-.card .btn { align-self: flex-start; margin-top: auto; padding: 10px 22px; font-size: 14px; }
+.card-actions { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.card .btn { padding: 10px 22px; font-size: 14px; }
+.card-cal { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--green); text-decoration: none; }
+.card-cal:hover { text-decoration: underline; text-underline-offset: 3px; }
+.card-meta .venue a { display: inline-flex; align-items: center; gap: 4px; color: inherit; text-decoration: underline; text-decoration-color: rgba(46,127,66,.4); text-underline-offset: 3px; }
+.card-meta .venue a:hover { color: var(--green); }
 .card .status { margin-top: auto; font-size: 12px; color: #6F7C6F; }
 .empty { text-align: center; color: var(--muted); background: #fff; border-radius: 20px; padding: 32px; border: 1px dashed rgba(46,127,66,.35); margin: 0; }
 
@@ -179,6 +184,7 @@ img { max-width: 100%; }
 }
 @media (max-width: 620px) {
   :root { --heading-size: 44px; }
+  .hero .btn { padding: 15px 22px; } /* dłuższy napis z podtytułem mieści się w jednej linii */
   .card { flex-basis: 100%; }
   .cast li { flex-basis: calc((100% - 20px) / 2); }
   .nav .inner { padding: 12px 16px; }

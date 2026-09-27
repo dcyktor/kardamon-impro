@@ -13,6 +13,7 @@ const events = defineCollection({
     date: z.coerce.date().transform((d) => d.toISOString().slice(0, 10)),
     time: z.string().regex(/^\d{2}:\d{2}$/, 'Godzina w formacie "GG:MM", w cudzysłowie, np. "19:30"'),
     venue: z.string(),
+    address: z.string().optional(), // ulica i numer, np. "Łaciarska 4" – link do mapy i dane dla Google
     city: z.string().default('Wrocław'),
     description: z.string().optional(),
     tickets: z.url().optional(), // brak = ogólny link z site.ts
