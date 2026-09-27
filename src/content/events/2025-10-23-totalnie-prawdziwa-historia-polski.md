@@ -1,7 +1,7 @@
 ---
 title: "Totalnie Prawdziwa Historia Polski"
-date: 2025-10-23
-time: "19:00"
+date: 23.10.2025
+time: 19:00
 venue: "Odra Centrum"
 address: "Wybrzeże Juliusza Słowackiego 5B"
 ---

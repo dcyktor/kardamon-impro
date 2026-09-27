@@ -1,8 +1,8 @@
 ---
 title: "Jakie Czasy Tacy Bohaterowie"
 subtitle: "Improwizowany Marvel"
-date: 2026-02-26
-time: "19:00"
+date: 26.02.2026
+time: 19:00
 venue: "Odra Centrum"
 address: "Wybrzeże Juliusza Słowackiego 5B"
 ---

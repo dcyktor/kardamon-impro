@@ -1,8 +1,8 @@
 ---
 title: "Wielkie Małe Gry"
 subtitle: "Krótkie Gry Improwizowane"
-date: 2025-11-27
-time: "19:00"
+date: 27.11.2025
+time: 19:00
 venue: "Odra Centrum"
 address: "Wybrzeże Juliusza Słowackiego 5B"
 ---

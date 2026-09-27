@@ -2,7 +2,100 @@
 
 Statyczna strona w [Astro](https://astro.build). Wydarzenia to pliki Markdown, strona sama dzieli je na nadchodzące i minione.
 
-## Co gdzie jest
+## Jak dodać wydarzenie (instrukcja dla składu)
+
+Wszystko robisz w przeglądarce na GitHubie, nic nie trzeba instalować. Potrzebujesz konta na GitHubie z dostępem do tego repo – poproś Daniela, żeby Cię dodał. Całość zajmuje ok. 5–10 minut.
+
+### 1. Przygotuj dwie rzeczy
+
+- **Wydarzenie na Evently** – żeby mieć link do biletów.
+- **Grafikę** – najlepiej kwadratową, co najmniej 800×800 px, w formacie JPG, PNG albo WebP. HEIC (domyślny format zdjęć z iPhone'a) nie zadziała.
+
+### 2. Wymyśl nazwę pliku
+
+Data spektaklu zapisana od roku + krótka nazwa, małymi literami, bez polskich znaków i spacji, np. `2026-11-20-harold`. Rok na początku sprawia, że pliki w folderze układają się po kolei. Z tej nazwy powstanie adres podstrony: `kardamonimpro.pl/wydarzenia/2026-11-20-harold/`.
+
+### 3. Dodaj plik z wydarzeniem
+
+1. Na GitHubie wejdź w repo → folder `src/content/events`.
+2. **Add file → Create new file**, jako nazwę wpisz `2026-11-20-harold.md`.
+3. Wklej szablon i uzupełnij:
+
+```markdown
+---
+title: "Harold"
+subtitle: "Długa forma improwizowana"
+date: 20.11.2026
+time: 19:00
+venue: "Sztuka na Miejscu"
+address: "Łaciarska 4"
+description: "Jedno krótkie zdanie, które pokaże się na karcie na stronie głównej."
+tickets: "https://app.evently.pl/events/..."
+---
+
+Tu wklej pełny opis spektaklu, np. z Evently.
+Złamania linii zostają tak, jak je wpiszesz,
+a pusta linia zaczyna nowy akapit.
+```
+
+Teksty (tytuł, miejsce, opis, link) zostaw w cudzysłowach – dzięki temu nie przeszkadzają w nich dwukropki i inne znaki. Datę i godzinę możesz wpisać bez cudzysłowu.
+
+4. **Commit changes** (zielony przycisk).
+
+Co oznaczają pola:
+
+| Pole | Wymagane? | Uwagi |
+|---|---|---|
+| `title` | tak | tytuł spektaklu |
+| `subtitle` | nie | mniejszy napis pod tytułem, np. „Improwizowany Western”; trafia też na główny przycisk na górze strony |
+| `date` | tak | po polsku: dzień.miesiąc.rok, np. `20.11.2026` |
+| `time` | tak | po polsku, np. `19:00`, `19.30` albo `9:30`; cudzysłów niepotrzebny |
+| `venue` | tak | nazwa miejsca |
+| `address` | nie | ulica i numer; bez niego nie będzie linku do mapy |
+| `city` | nie | domyślnie Wrocław |
+| `description` | nie | jedno zdanie na kartę na stronie głównej |
+| `tickets` | nie | link do biletów na to wydarzenie; bez niego przyciski prowadzą na ogólną stronę na Evently |
+| `soldOut` | nie | `true` = zamiast przycisku biletów napis „Wyprzedane” |
+| `free` | nie | `true` = napis „Wstęp wolny” zamiast przycisku biletów |
+
+### 4. Dodaj grafikę
+
+1. Zmień nazwę grafiki na taką samą jak pliku, tylko z innym rozszerzeniem, np. `2026-11-20-harold.jpg`.
+2. W tym samym folderze `src/content/events`: **Add file → Upload files**, przeciągnij grafikę, **Commit changes**.
+
+### 5. Sprawdź
+
+Po ok. minucie wydarzenie jest na stronie. Postęp widać w zakładce **Actions**: zielony ptaszek = gotowe, czerwony krzyżyk = błąd (niżej, co wtedy).
+
+### Co dzieje się samo
+
+- karta na stronie głównej z datą, miejscem, mapą, „Kup bilety” i „Dodaj do kalendarza”,
+- jeśli to najbliższy spektakl – główny przycisk na górze strony („Bilety · Długa forma improwizowana · 20.11”),
+- podstrona wydarzenia z pełnym opisem,
+- obrazek do podglądu linku na Messengerze i Facebooku, dane dla Google, wpis w mapie strony,
+- dzień po spektaklu wydarzenie samo przechodzi do zakładki „Zakończone”.
+
+### Zmiany po dodaniu
+
+Otwórz plik wydarzenia na GitHubie, kliknij ołówek (**Edit**), popraw i **Commit changes**:
+
+- **wyprzedane** – dopisz linijkę `soldOut: true` (między liniami `---`),
+- **zmiana godziny, miejsca, opisu** – popraw odpowiednie pole,
+- **odwołane** – usuń plik `.md` i grafikę (menu `…` → **Delete file**).
+
+### Gdy coś nie działa
+
+Jeśli w **Actions** pojawi się czerwony krzyżyk, strona się po prostu nie zaktualizowała – poprzednia wersja dalej działa. Kliknij w nieudane uruchomienie i w błąd, a zobaczysz, który plik i które pole są złe. Najczęstsze przyczyny:
+
+- godzina w innym formacie niż `GG:MM` albo `GG.MM` (np. `7 PM`) albo nieistniejąca (np. `25:00`),
+- data w innym formacie niż `DD.MM.RRRR` (np. `20/11/2026`) albo nieistniejący dzień (np. `31.02.2026`),
+- brak cudzysłowu zamykającego albo `---` na początku i końcu nagłówka.
+
+Grafika się nie pokazuje? Sprawdź, czy ma dokładnie tę samą nazwę co plik `.md` i czy nie jest w formacie HEIC.
+
+## Dla technicznych
+
+### Co gdzie jest
 
 | Plik / folder | Co edytujesz |
 |---|---|
@@ -17,39 +110,7 @@ Statyczna strona w [Astro](https://astro.build). Wydarzenia to pliki Markdown, s
 | `src/content.config.ts` | Schemat wydarzenia (jakie pola, co wymagane) |
 | `src/pages/index.astro` | Szablon strony |
 
-## Dodanie wydarzenia
-
-Nowy plik w `src/content/events/`, np. `2026-11-20-harold.md` (nazwa pliku dowolna, data na początku ułatwia porządek):
-
-```markdown
----
-title: "Kurz, Konie i Złe Decyzje"
-subtitle: "Improwizowany Western"   # opcjonalne – mniejszy napis pod tytułem
-date: 2026-11-20
-time: "19:30"               # w cudzysłowie!
-venue: "Klub XYZ"
-address: "Ruska 46"          # opcjonalne – ulica i numer: link do mapy, dane dla Google
-city: "Wrocław"             # opcjonalne, domyślnie Wrocław
-description: "Krótki opis"  # opcjonalne
-tickets: "https://..."      # opcjonalne – brak = ogólny link z site.ts
-soldOut: false              # opcjonalne – true pokazuje „Wyprzedane”
-free: false                 # opcjonalne – true pokazuje „Wstęp wolny”
----
-```
-
-Dla każdego nadchodzącego wydarzenia strona sama tworzy plik „Dodaj do kalendarza” (`/kalendarz/<nazwa-pliku>.ics`, spektakl trwa w nim 2 godziny) i dane dla Google (schema.org), dzięki którym spektakl może pojawić się w wynikach wyszukiwania. Główny przycisk na górze strony podaje datę najbliższego spektaklu („Bilety · Improwizowany Western · 19.10”, a bez podtytułu „Bilety na 19.10”) i prowadzi prosto do jego biletów.
-
-Pod nagłówkiem (po drugim `---`) możesz wpisać pełny opis spektaklu zwykłym tekstem. Pojawi się na podstronie wydarzenia `/wydarzenia/<nazwa-pliku>/`, do której prowadzą tytuł i grafika karty. Pojedyncze złamania linii są zachowane, pusta linia zaczyna nowy akapit.
-
-Grafika wydarzenia (opcjonalna): wrzuć ją obok pliku `.md` pod tą samą nazwą, np. `2026-11-20-harold.jpg`. Na karcie pokazuje się jako kwadrat przycięty od środka, więc najlepiej od razu kwadratowa, min. 800×800 px.
-
-Commit, push i po ~minucie zmiana jest na stronie. Da się to zrobić nawet z przeglądarki na GitHubie („Add file → Create new file”).
-
-Jeśli pomylisz format albo zapomnisz wymaganego pola, build się zatrzyma i w zakładce **Actions** zobaczysz, który plik i które pole jest złe. Strona na produkcji zostaje wtedy bez zmian.
-
-Wydarzenie jest „nadchodzące” do końca swojego dnia (czas polski). Minione trafiają automatycznie do zakładki „Zakończone”, od najnowszych.
-
-## Uruchomienie lokalnie
+### Uruchomienie lokalnie
 
 Potrzebny Node.js 22.12 lub nowszy.
 
@@ -59,24 +120,24 @@ npm run dev      # http://localhost:4321, odświeża się na żywo przy każdej 
 npm run build    # wynik w dist/
 ```
 
-## Publikacja na GitHub Pages (za darmo)
+### Publikacja na GitHub Pages (za darmo)
 
 1. Utwórz repo na GitHubie i wypchnij ten projekt na gałąź `main`.
 2. W repo: **Settings → Pages → Source: GitHub Actions**.
 3. Gotowe – każdy push publikuje stronę. Dodatkowo workflow odpala się codziennie w nocy, żeby wczorajsze występy przeszły do archiwum.
 
-### Własna domena
+#### Własna domena
 
 1. W `astro.config.mjs` ustaw `site` na domenę (teraz `https://kardamonimpro.pl`).
 2. **Settings → Pages → Custom domain** i ustaw rekordy DNS u rejestratora według instrukcji GitHuba. Plik `CNAME` nie jest potrzebny: przy deployu przez GitHub Actions GitHub go ignoruje.
 
 Bez własnej domeny strona będzie pod `https://<użytkownik>.github.io/<repo>/` i logo z faviconą się tam nie wyświetlą, bo ich ścieżki (`/logo.png`) prowadzą do głównego katalogu domeny.
 
-### Uwaga o codziennym rebuildzie
+#### Uwaga o codziennym rebuildzie
 
 GitHub wyłącza zaplanowane workflowy w repozytoriach bez aktywności przez 60 dni. Jeśli przez dwa miesiące nic nie commitujecie, wejdź w zakładkę Actions i włącz workflow ponownie (albo po prostu dodaj kolejne wydarzenie).
 
-## Zmiana kolorów i zdjęć
+### Zmiana kolorów i zdjęć
 
 Zdjęcia z występów do karuzeli na górze strony wrzuć do `src/assets/hero/` (poziome, najlepiej min. 1920 px szerokości). Pokazują się po kolei według nazw plików (`01-...jpg`, `02-...jpg`), zmieniają co 10 sekund i są przykryte matowym, zielonkawym „szkłem”, na którym leży logo i opis. Bez zdjęć w tym folderze góra strony ma zielone tło.
 
