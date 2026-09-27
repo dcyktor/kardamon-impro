@@ -2,7 +2,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { site } from '../../data/site';
-import { DURATION_MS, isUpcoming, startIso } from '../../lib/events';
+import { DURATION_MS, eventPath, isUpcoming, startIso } from '../../lib/events';
 
 export const getStaticPaths = (async () => {
   const events = await getCollection('events', (e) => isUpcoming(e.data.date));
@@ -37,7 +37,8 @@ export const GET: APIRoute = ({ props, site: siteUrl }) => {
   const { id, data: e } = (props as { event: CollectionEntry<'events'> }).event;
   const start = new Date(startIso(e.date, e.time));
   const tickets = e.tickets ?? site.ticketsUrl;
-  const description = [e.subtitle, e.description, e.free ? 'Wstęp wolny' : `Bilety: ${tickets}`]
+  const page = siteUrl ? new URL(eventPath(id), siteUrl).href : undefined;
+  const description = [e.subtitle, e.description, e.free ? 'Wstęp wolny' : `Bilety: ${tickets}`, page && `Więcej: ${page}`]
     .filter(Boolean).join('\n');
   const lines = [
     'BEGIN:VCALENDAR',

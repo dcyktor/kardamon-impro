@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+---
+<footer class="footer" id="kontakt">
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <img src="/logo-napis.svg" alt={site.name} width="108" height="60" class="footer-logo" />
+      <p>{site.footerText}</p>
+    </div>
+    <div class="footer-col">
+      <span class="kicker">Nawigacja</span>
+      <a href="/#wydarzenia">Wydarzenia</a>
+      <a href="/#o-nas">O nas</a>
+      <a href={site.ticketsUrl} target="_blank" rel="noopener">Bilety</a>
+    </div>
+    <div class="footer-col">
+      <span class="kicker">Kontakt</span>
+      {site.email.includes('@') ? <a href={`mailto:${site.email}`}>{site.email}</a> : <span>{site.email}</span>}
+      <div class="icons">
+        {site.socials.map((s) => (
+          <a href={s.url} class="icon-link light" aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} size={16} /></a>
+        ))}
+      </div>
+    </div>
+  </div>
+  <div class="copyright">© {new Date().getFullYear()} {site.name}</div>
+</footer>

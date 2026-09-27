@@ -1,0 +1,39 @@
+---
+// Karta wydarzenia na stronie głównej. Tytuł i grafika prowadzą do podstrony wydarzenia.
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { calendarPath, day, eventPath, longDate, mapsUrl, month, weekday, type EventItem } from '../lib/events';
+
+interface Props { event: EventItem; past?: boolean }
+const { event: e, past = false } = Astro.props;
+const href = eventPath(e.id);
+---
+<li class:list={['card', { past }]}>
+  {e.image && (
+    <a href={href} class="card-media" tabindex="-1" aria-hidden="true">
+      <Image src={e.image} alt="" width={Math.min(e.image.width, 720)} />
+    </a>
+  )}
+  <div class="card-top">
+    <div class="date-badge" aria-hidden="true"><span class="d">{day(e.date)}</span><span class="m">{month(e.date)}</span><span class="y">{e.date.slice(0, 4)}</span></div>
+    <div class="card-meta">
+      <span class="sr">{longDate(e.date)}, </span>
+      {!past && <span class="time">{weekday(e.date)}, {e.time}</span>}
+      <span class="venue">{!past && e.address
+        ? <a href={mapsUrl(e.venue, e.address, e.city)} target="_blank" rel="noopener"><Icon name="pin" size={14} />{e.venue}, {e.city}<span class="sr"> (mapa)</span></a>
+        : <>{e.venue}, {e.city}</>}</span>
+    </div>
+  </div>
+  <a href={href} class="card-title serif">{e.title}</a>
+  {e.subtitle && <div class="card-subtitle">{e.subtitle}</div>}
+  {!past && e.description && <p class="card-desc">{e.description}</p>}
+  {!past && (
+    <div class="card-actions">
+      {e.soldOut ? <span class="kicker status">Wyprzedane</span>
+        : e.free ? <span class="kicker status">Wstęp wolny</span>
+        : <a href={e.tickets ?? site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety<span class="sr"> na {e.title}</span></a>}
+      <a href={calendarPath(e.id)} class="card-cal"><Icon name="calendar" size={16} />Dodaj do kalendarza<span class="sr">: {e.title}</span></a>
+    </div>
+  )}
+</li>

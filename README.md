@@ -10,7 +10,7 @@ Statyczna strona w [Astro](https://astro.build). Wydarzenia to pliki Markdown, s
 | `src/data/site.ts` | Nazwa, opisy, e-mail, link do biletów, skład, social media |
 | `src/data/o-nas.md` | Tekst sekcji „O nas” (zwykły Markdown) |
 | `src/styles/global.css` | Wygląd; kolory są na samej górze pliku |
-| `public/` | Logo, favicon – wszystko stąd jest dostępne pod `/nazwa-pliku` |
+| `public/` | Logo (`logo-napis.svg` na stronie, kwadratowe `logo.png` jako ikonka), favicon – wszystko stąd jest dostępne pod `/nazwa-pliku` |
 | `src/assets/sklad/` | Zdjęcia składu (patrz niżej) |
 | `src/assets/hero/` | Zdjęcia do karuzeli na górze strony (patrz niżej) |
 | `src/components/Icon.astro` | Ikony social mediów (dopisz nową, jeśli dojdzie kolejny serwis) |
@@ -38,6 +38,8 @@ free: false                 # opcjonalne – true pokazuje „Wstęp wolny”
 ```
 
 Dla każdego nadchodzącego wydarzenia strona sama tworzy plik „Dodaj do kalendarza” (`/kalendarz/<nazwa-pliku>.ics`, spektakl trwa w nim 2 godziny) i dane dla Google (schema.org), dzięki którym spektakl może pojawić się w wynikach wyszukiwania. Główny przycisk na górze strony podaje datę najbliższego spektaklu („Bilety · Improwizowany Western · 19.10”, a bez podtytułu „Bilety na 19.10”) i prowadzi prosto do jego biletów.
+
+Pod nagłówkiem (po drugim `---`) możesz wpisać pełny opis spektaklu zwykłym tekstem. Pojawi się na podstronie wydarzenia `/wydarzenia/<nazwa-pliku>/`, do której prowadzą tytuł i grafika karty. Pojedyncze złamania linii są zachowane, pusta linia zaczyna nowy akapit.
 
 Grafika wydarzenia (opcjonalna): wrzuć ją obok pliku `.md` pod tą samą nazwą, np. `2026-11-20-harold.jpg`. Na karcie pokazuje się jako kwadrat przycięty od środka, więc najlepiej od razu kwadratowa, min. 800×800 px.
 

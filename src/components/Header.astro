@@ -1,0 +1,16 @@
+---
+// Pasek nawigacji. Linki "/#sekcja" działają i na stronie głównej, i na podstronach wydarzeń.
+import { site } from '../data/site';
+---
+<header class="nav">
+  <div class="inner">
+    <a href="/" class="brand"><img src="/logo-napis.svg" alt={site.name} width="86" height="48" /></a>
+    <nav class="nav-links" aria-label="Główne">
+      <a href="/#wydarzenia">Wydarzenia</a>
+      <a href="/#o-nas">O nas</a>
+      <a href={site.ticketsUrl} target="_blank" rel="noopener">Bilety</a>
+      <a href="/#kontakt">Kontakt</a>
+    </nav>
+    <a href={site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety</a>
+  </div>
+</header>

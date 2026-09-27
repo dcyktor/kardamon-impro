@@ -1,0 +1,78 @@
+---
+// Podstrona wydarzenia: /wydarzenia/<nazwa-pliku>/. Pełny opis to treść pliku .md pod nagłówkiem.
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Icon from '../../components/Icon.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import { site } from '../../data/site';
+import { calendarPath, isUpcoming, loadEvents, longDate, mapsUrl, shortDate, weekday, type EventItem } from '../../lib/events';
+import { eventSchema, groupSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const events = await loadEvents();
+  return events.map((event) => ({ params: { id: event.id }, props: { event } }));
+}
+
+const { event: e } = Astro.props as { event: EventItem };
+const upcoming = isUpcoming(e.date);
+const { Content } = await render(e.entry);
+const hasBody = Boolean(e.entry.body?.trim());
+const when = `${weekday(e.date)}, ${longDate(e.date)}, godz. ${e.time}`;
+const title = `${e.title}${e.subtitle ? ` – ${e.subtitle}` : ''} · ${shortDate(e.date)}.${e.date.slice(0, 4)} · ${site.name}`;
+const description = `${when.charAt(0).toUpperCase()}${when.slice(1)} – ${e.venue}, ${e.city}. ${e.description ?? e.subtitle ?? ''} ${site.name} – teatr improwizacji z Wrocławia.`
+  .replace(/\s+/g, ' ').trim();
+const structuredData = [groupSchema(Astro.site!), await eventSchema(e, Astro.site!)];
+---
+<Base title={title} description={description}>
+  <JsonLd data={structuredData} />
+  <Header />
+
+  <main class="event-page">
+    <div class="container">
+      <a href="/#wydarzenia" class="back-link">← Wszystkie wydarzenia</a>
+      <article class="event">
+        {e.image && <Image src={e.image} alt="" width={Math.min(e.image.width, 900)} loading="eager" class="event-img" />}
+        <div class="event-body">
+          <span class="kicker">{upcoming ? 'Nadchodzące' : 'Zakończone'}</span>
+          <h1 class="serif">{e.title}</h1>
+          {e.subtitle && <p class="event-subtitle">{e.subtitle}</p>}
+
+          <dl class="event-facts">
+            <div>
+              <dt>Kiedy</dt>
+              <dd>{when}</dd>
+            </div>
+            <div>
+              <dt>Gdzie</dt>
+              <dd>{e.address
+                ? <a href={mapsUrl(e.venue, e.address, e.city)} target="_blank" rel="noopener"><Icon name="pin" size={16} />{e.venue}, {e.address}, {e.city}</a>
+                : <>{e.venue}, {e.city}</>}</dd>
+            </div>
+          </dl>
+
+          {upcoming ? (
+            <div class="card-actions">
+              {e.soldOut ? <span class="kicker status">Wyprzedane</span>
+                : e.free ? <span class="kicker status">Wstęp wolny</span>
+                : <a href={e.tickets ?? site.ticketsUrl} class="btn" target="_blank" rel="noopener">Kup bilety</a>}
+              <a href={calendarPath(e.id)} class="card-cal"><Icon name="calendar" size={16} />Dodaj do kalendarza</a>
+            </div>
+          ) : (
+            <div class="card-actions">
+              <a href="/#wydarzenia" class="btn">Zobacz nadchodzące spektakle</a>
+            </div>
+          )}
+
+          <div class="event-text">
+            {hasBody ? <Content /> : e.description && <p>{e.description}</p>}
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
