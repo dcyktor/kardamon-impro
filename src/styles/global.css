@@ -14,6 +14,7 @@
 
   --serif: 'DM Serif Display', Georgia, serif;
   --sans: 'Karla', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --heading-size: 56px; /* wspólny rozmiar nagłówków: Kardamon, Wydarzenia, O nas */
 
   color-scheme: light;
   box-sizing: border-box;
@@ -87,6 +88,10 @@ img { max-width: 100%; }
 /* Zdjęcia 4:3 w szerokim hero: tniemy głównie z dołu (twarze są wysoko), a na szerokich ekranach hero rośnie z szerokością */
 .hero.has-photos { display: flex; align-items: center; min-height: min(52vw, 88vh); }
 .hero.has-photos .inner { width: 100%; }
+/* Na zdjęciach pod szkłem zielony i szary tekst ginie przy ciemnych fragmentach: wszystko w kolorze nagłówka */
+.hero.has-photos .kicker, .hero.has-photos p, .hero.has-photos .icon-link { color: var(--ink-deep); }
+.hero.has-photos p { font-weight: 500; }
+.hero.has-photos .icon-link { border-color: rgba(22, 40, 27, .35); }
 .hero-slide.active { opacity: 1; }
 .hero-slides::after {
   content: ''; position: absolute; inset: 0;
@@ -97,7 +102,7 @@ img { max-width: 100%; }
 .hero-logo { width: 84px; height: 84px; background: #fff; border-radius: 22px; padding: 10px; border: 1px solid rgba(28,42,31,.08); box-shadow: 0 12px 28px rgba(28,42,31,.14); }
 .hero-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; display: block; }
 .hero .kicker { color: var(--green-dark); }
-.hero h1 { margin: 0; font-size: 76px; line-height: 1.05; color: var(--ink-deep); }
+.hero h1 { margin: 0; font-size: var(--heading-size); line-height: 1.05; color: var(--ink-deep); }
 .hero p { margin: 0; max-width: 520px; font-size: 19px; line-height: 1.6; color: var(--text); }
 .hero .btn { margin-top: 8px; padding: 15px 32px; }
 .hero .icons { margin-top: 12px; justify-content: center; }
@@ -105,7 +110,7 @@ img { max-width: 100%; }
 /* Sekcje */
 .section { padding: 100px 24px; }
 .section-head { display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
-.section h2 { margin: 0; font-size: 40px; line-height: 1.15; }
+.section h2 { margin: 0; font-size: var(--heading-size); line-height: 1.1; }
 
 /* Wydarzenia */
 .events { background: var(--mint); }
@@ -175,12 +180,12 @@ img { max-width: 100%; }
 }
 @media (max-width: 860px) {
   .nav-links { display: none; }
-  .hero h1 { font-size: 56px; }
   .hero .inner { padding: 96px 24px 80px; }
   .section { padding: 72px 24px; }
   .footer-grid { grid-template-columns: 1fr; gap: 40px; }
 }
 @media (max-width: 620px) {
+  :root { --heading-size: 44px; }
   .card { flex-basis: 100%; }
   .cast li { flex-basis: calc((100% - 20px) / 2); }
   .nav .inner { padding: 12px 16px; }
