@@ -6,7 +6,7 @@ import { site } from '../data/site';
 // noindex: strona, której wyszukiwarki nie powinny pokazywać (np. 404) – bez adresu kanonicznego i podglądu linku.
 interface Props { title?: string; description?: string; image?: string; noindex?: boolean }
 const {
-  title = `${site.name} – ${site.kicker.toLowerCase()}`,
+  title = site.title,
   description = site.description,
   image = '/og/strona.jpg',
   noindex = false,

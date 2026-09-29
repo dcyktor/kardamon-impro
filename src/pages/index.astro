@@ -65,8 +65,11 @@ const structuredData = [groupSchema(Astro.site!), ...(await Promise.all(upcoming
       )}
       <div class="inner">
         <div class="hero-content">
-          <h1><img src="/logo-napis.svg" alt={site.name} width="280" height="156" /></h1>
-          <span class="kicker">{site.kicker}</span>
+          <!-- H1 = logo (alt „Kardamon”) + „Teatr improwizacji z Wrocławia”: nazwa, rodzaj i miasto w głównym nagłówku -->
+          <h1>
+            <img src="/logo-napis.svg" alt={site.name} width="280" height="156" />
+            <span class="kicker">{site.kicker}</span>
+          </h1>
           <p>{site.tagline}</p>
           <a href={heroTickets} class="btn" target="_blank" rel="noopener">{nextHasTickets
             ? <>{next.subtitle ? `Bilety · ${next.subtitle} · ${shortDate(next.date)}` : `Bilety na ${shortDate(next.date)}`}<span class="sr">, {next.title}</span></>

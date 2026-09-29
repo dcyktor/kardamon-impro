@@ -1,7 +1,9 @@
 // Podstawowe dane strony. Tekst "O nas" jest w pliku o-nas.md obok.
 export const site = {
   name: 'Kardamon',
-  kicker: 'Teatr improwizacji',
+  kicker: 'Teatr improwizacji z Wrocławia', // pod logo, część nagłówka H1 – miasto widać od razu (SEO)
+  // Tytuł strony głównej w karcie przeglądarki i w wynikach Google
+  title: 'Kardamon – teatr improwizacji we Wrocławiu · spektakle impro',
   tagline: 'Komedia, która powstaje na Waszych oczach.',
   // Opis strony w wynikach Google (meta description), osobny od krótkiego hasła
   description: 'Kardamon – teatr improwizacji z Wrocławia. Komediowe spektakle bez scenariusza, tworzone z sugestii publiczności.',
