@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { site } from '../data/site';
+import FallingSeed from '../components/FallingSeed.astro';
 
 // Podstrony podają własny tytuł karty, opis dla Google i obrazek podglądu linku; strona główna korzysta z domyślnych.
 // noindex: strona, której wyszukiwarki nie powinny pokazywać (np. 404) – bez adresu kanonicznego i podglądu linku.
@@ -46,5 +47,6 @@ const imageUrl = new URL(image, Astro.site).href;
   </head>
   <body>
     <slot />
+    <FallingSeed />
   </body>
 </html>

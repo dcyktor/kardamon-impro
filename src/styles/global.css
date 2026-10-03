@@ -205,6 +205,15 @@ a.card-title:hover { text-decoration: underline; text-decoration-thickness: 1px;
 .cast .photo.placeholder { background: var(--mint); border: 1.5px dashed rgba(46,127,66,.35); display: flex; align-items: center; justify-content: center; color: #6B8A6E; }
 .cast .name { font-size: 13px; color: var(--muted); }
 
+/* Spadające ziarenko w lewym marginesie (FallingSeed.astro); pozycje i wymiary ustawia skrypt */
+.seed-layer { position: absolute; left: 0; z-index: 1; pointer-events: none; }
+.seed-frosted { position: absolute; left: 0; top: 0; pointer-events: none; filter: blur(2.5px); opacity: .6; } /* kopia w hero, „za szkłem” */
+.seed-layer svg, .seed-frosted svg { position: absolute; inset: 0; overflow: visible; }
+.seed-trail { fill: none; stroke: url(#seed-trail-color); stroke-opacity: .7; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0 14; }
+.seed-layer .on-hero { stop-color: var(--ink-deep); stop-opacity: .75; }
+.seed-layer .on-page { stop-color: var(--green); }
+.seed { position: absolute; left: 0; top: 0; max-width: none; will-change: transform; }
+
 /* Stopka */
 .footer { background: var(--green-dark); padding: 72px 24px 32px; color: rgba(255,255,255,.75); }
 .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 56px; }

@@ -1,0 +1,138 @@
+---
+// Ziarenko kardamonu spadające lewym marginesem przy przewijaniu, z kropkowanym, falującym śladem
+// (jak na grafice „Najbliższe spektakle”). Ślad liczy skrypt pod wysokość strony, od górnej krawędzi hero (na podstronach: treści) do stopki.
+// Tylko na szerokich ekranach (jest miejsce obok treści); bez JS nie ma nic, przy „ogranicz ruch” stoi w miejscu.
+import seed from '../assets/ziarenko.webp';
+---
+<div class="seed-layer" aria-hidden="true" hidden>
+  <svg>
+    <!-- Na zielonym szkle hero kropki są ciemniejsze; granicę (offset) ustawia skrypt -->
+    <defs>
+      <linearGradient id="seed-trail-color" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+      <stop class="on-hero" offset="0" /><stop class="on-hero" offset="0" /><stop class="on-page" offset="0" /><stop class="on-page" offset="1" />
+      </linearGradient>
+    </defs>
+    <path class="seed-trail" />
+  </svg>
+  <img src={seed.src} width={seed.width} height={seed.height} alt="" class="seed" decoding="async" />
+</div>
+
+<script is:inline>
+  (function () {
+    var layer = document.querySelector('.seed-layer');
+    var start = document.getElementById('top') || document.querySelector('main'); // hero z karuzelą, na podstronach treść
+    var end = document.querySelector('.footer');
+    if (!layer || !start || !end) return;
+    var svg = layer.querySelector('svg');
+    var seed = layer.querySelector('.seed');
+    // Na wysokości karuzeli ziarenko wygląda jak za matowym szkłem: kopia w hero (nad szkłem, pod treścią), rozmyta
+    // i półprzezroczysta (hero ma overflow: hidden), a warstwa na stronie jest przycięta do części poniżej hero.
+    // Prawdziwie pod szkłem (w .hero-slides) było prawie niewidoczne: szkło przepuszcza tylko ok. 28%.
+    var glass = start.querySelector('.hero-slides');
+    var frosted = null;
+    if (glass) {
+      frosted = document.createElement('div');
+      frosted.className = 'seed-frosted';
+      var svgCopy = svg.cloneNode(true);
+      svgCopy.querySelector('defs').remove(); // gradient zostaje jeden, w oryginale (unikalne id)
+      frosted.appendChild(svgCopy);
+      frosted.appendChild(seed.cloneNode(true));
+      start.insertBefore(frosted, glass.nextSibling);
+    }
+    var copies = frosted ? [layer, frosted] : [layer];
+    var svgs = copies.map(function (c) { return c.querySelector('svg'); });
+    var trails = copies.map(function (c) { return c.querySelector('.seed-trail'); });
+    var seeds = copies.map(function (c) { return c.querySelector('.seed'); });
+    var wide = matchMedia('(min-width: 1340px)');
+    var still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    var CONTENT = 1100;   // szerokość .container
+    var PERIOD = 600;     // co tyle px w dół pełne kołysanie (w lewo i z powrotem)
+    var STEP = 3;         // dokładność śladu (px w dół)
+    var SPIN = 0.3;       // obrót ziarenka w stopniach na px w dół
+    var EASE = 0.15;      // bezwładność: jaką część drogi do celu ziarenko pokonuje w jednej klatce
+    var pts = [], xy = [], cum = [], span = 1, seedH = 0, layerTop = 0, pos = 0, moving = false;
+
+    // Ślad = łagodne kołysanie na boki.
+    // pts: [x, y, kąt ziarenka]; cum: długość śladu od początku do danego punktu.
+    function build() {
+      copies.forEach(function (c) { c.hidden = !wide.matches; });
+      if (layer.hidden) return;
+      layerTop = start.getBoundingClientRect().top + scrollY;
+      var h = end.getBoundingClientRect().top + scrollY - layerTop;
+      var w = (document.documentElement.clientWidth - CONTENT) / 2;
+      seedH = Math.min(80, w * 0.42);
+      // Ślad (i środek ziarenka) trzyma się z dala od treści i od lewej krawędzi
+      var room = w - seedH * 0.6 - 16;
+      var sway = room * 0.3, cx = seedH * 0.3 + 8 + room / 2;
+      layer.style.top = layerTop + 'px';
+      layer.style.clipPath = frosted ? 'inset(' + start.offsetHeight + 'px 0 0 0)' : '';
+      copies.forEach(function (c) { c.style.width = w + 'px'; c.style.height = h + 'px'; });
+      svgs.forEach(function (s) { s.setAttribute('width', w); s.setAttribute('height', h); });
+      var heroEnd = Math.min(1, start.offsetHeight / h);
+      svg.querySelector('linearGradient').setAttribute('y2', h);
+      svg.querySelectorAll('stop').forEach(function (stop, k) { if (k === 1 || k === 2) stop.setAttribute('offset', heroEnd); });
+      seeds.forEach(function (s) { s.style.height = seedH + 'px'; s.style.width = 'auto'; });
+      pts = []; xy = []; cum = [];
+      for (var s = seedH / 2; s <= h - seedH / 2; s += STEP) {
+        var p = [cx + sway * Math.sin(2 * Math.PI * s / PERIOD), s, s * SPIN];
+        var prev = pts[pts.length - 1];
+        cum.push(prev ? cum[cum.length - 1] + Math.hypot(p[0] - prev[0], p[1] - prev[1]) : 0);
+        pts.push(p);
+        xy.push(p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+      }
+      span = Math.max(1, h - seedH);
+      pos = target();
+    }
+
+    // Cel: ziarenko mniej więcej w połowie ekranu. Po śladzie porusza się ze stałą prędkością.
+    function target() {
+      var total = cum[cum.length - 1] || 0;
+      if (still.matches) return total;
+      var progress = (scrollY + innerHeight / 2 - layerTop - seedH / 2) / span;
+      return Math.max(0, Math.min(total, progress * total));
+    }
+
+    function draw() {
+      if (pts.length < 2) return;
+      // Punkt na śladzie odległy o pos od początku (wyszukiwanie binarne + interpolacja między punktami)
+      var lo = 0, hi = cum.length - 1;
+      while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (cum[mid] <= pos) lo = mid; else hi = mid; }
+      var a = pts[lo], b = pts[hi], f = Math.min(1, Math.max(0, (pos - cum[lo]) / ((cum[hi] - cum[lo]) || 1)));
+      var x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f, angle = a[2] + (b[2] - a[2]) * f;
+      var d = pos > 0 ? 'M' + xy.slice(0, lo + 1).join('L') + 'L' + x.toFixed(1) + ' ' + y.toFixed(1) : '';
+      var transform = 'translate(' + x + 'px,' + y + 'px) translate(-50%,-50%) rotate(' + (still.matches ? 20 : angle) + 'deg)';
+      trails.forEach(function (t) { t.setAttribute('d', d); });
+      seeds.forEach(function (s) { s.style.transform = transform; });
+    }
+
+    // Przy przewijaniu ziarenko płynnie dogania cel (bez skoków przy kółku myszy)
+    function step() {
+      var diff = target() - pos;
+      if (Math.abs(diff) < 0.5) { pos += diff; moving = false; }
+      else { pos += diff * EASE; requestAnimationFrame(step); }
+      draw();
+    }
+    function onScroll() {
+      if (layer.hidden || moving) return;
+      moving = true;
+      requestAnimationFrame(step);
+    }
+
+    function rebuild() { build(); if (!layer.hidden) draw(); }
+    var resizeQueued = false;
+    function onResize() {
+      if (resizeQueued) return;
+      resizeQueued = true;
+      requestAnimationFrame(function () { resizeQueued = false; rebuild(); });
+    }
+
+    rebuild();
+    addEventListener('scroll', onScroll, { passive: true });
+    wide.addEventListener('change', rebuild);
+    still.addEventListener('change', rebuild);
+    // Wysokość strony zmienia się np. po przełączeniu zakładki albo wczytaniu czcionek
+    if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(document.body);
+    else addEventListener('resize', onResize);
+  })();
+</script>
