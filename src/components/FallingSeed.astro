@@ -1,7 +1,8 @@
 ---
 // Ziarenko kardamonu spadające lewym marginesem przy przewijaniu, z kropkowanym, falującym śladem
 // (jak na grafice „Najbliższe spektakle”). Ślad liczy skrypt pod wysokość strony, od górnej krawędzi hero (na podstronach: treści) do stopki.
-// Tylko na szerokich ekranach (jest miejsce obok treści); bez JS nie ma nic, przy „ogranicz ruch” stoi w miejscu.
+// Na szerokich ekranach w wolnym marginesie obok treści; na węższych (telefon, tablet) blade, w tle na całą szerokość,
+// za tekstem i kartami. Bez JS nie ma nic, przy „ogranicz ruch” stoi w miejscu.
 import seed from '../assets/ziarenko.webp';
 ---
 <div class="seed-layer" aria-hidden="true" hidden>
@@ -56,13 +57,13 @@ import seed from '../assets/ziarenko.webp';
     // Ślad = łagodne kołysanie na boki.
     // pts: [x, y, kąt ziarenka]; cum: długość śladu od początku do danego punktu.
     function build() {
-      copies.forEach(function (c) { c.hidden = !wide.matches; });
-      if (layer.hidden) return;
+      var bg = !wide.matches; // za wąsko na margines: ziarenko w tle
+      copies.forEach(function (c) { c.hidden = false; c.classList.toggle('seed-bg', bg); });
       layerTop = start.getBoundingClientRect().top + scrollY;
       var h = end.getBoundingClientRect().top + scrollY - layerTop;
-      var w = (document.documentElement.clientWidth - CONTENT) / 2;
+      var w = bg ? document.documentElement.clientWidth : (document.documentElement.clientWidth - CONTENT) / 2;
       seedH = Math.min(80, w * 0.42);
-      // Ślad (i środek ziarenka) trzyma się z dala od treści i od lewej krawędzi
+      // Ślad (i środek ziarenka) trzyma się z dala od treści (w tle: od prawej krawędzi) i od lewej krawędzi
       var room = w - seedH * 0.6 - 16;
       var sway = room * 0.3, cx = seedH * 0.3 + 8 + room / 2;
       layer.style.top = layerTop + 'px';

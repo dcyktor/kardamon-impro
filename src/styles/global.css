@@ -213,6 +213,10 @@ a.card-title:hover { text-decoration: underline; text-decoration-thickness: 1px;
 .seed-layer .on-hero { stop-color: var(--ink-deep); stop-opacity: .75; }
 .seed-layer .on-page { stop-color: var(--green); }
 .seed { position: absolute; left: 0; top: 0; max-width: none; will-change: transform; }
+/* Węższe ekrany: ziarenko w tle na całą szerokość, blade; treść leży nad nim (wyższy z-index niż warstwa) */
+.container, .hero .inner, .not-found-inner { position: relative; z-index: 2; }
+.seed-layer.seed-bg { opacity: .25; }
+.seed-frosted.seed-bg { opacity: .35; }
 
 /* Stopka */
 .footer { background: var(--green-dark); padding: 72px 24px 32px; color: rgba(255,255,255,.75); }
