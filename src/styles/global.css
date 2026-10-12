@@ -113,6 +113,31 @@ img { max-width: 100%; }
 .hero h1 img { display: block; width: min(280px, 70vw); height: auto; }
 .hero p { margin: 0; max-width: 520px; font-size: 19px; line-height: 1.6; color: var(--text); }
 .hero .btn { margin-top: 8px; padding: 15px 32px; }
+/* Odliczanie jako flip clock tuż pod przyciskiem z biletami (Countdown.astro) */
+.countdown { margin-top: -8px; }
+.flip-clock { display: flex; justify-content: center; gap: 14px; }
+.flip-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.flip-digits { display: flex; gap: 4px; }
+.flip-label { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-deep); }
+/* Kafelek: wysokość = 2 × połówka; każda połówka pokazuje górę albo dół tej samej cyfry (<i> ma pełną wysokość kafelka) */
+.flip { --h: 46px; position: relative; display: block; width: 34px; height: var(--h); perspective: 200px; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.flip .half { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; background: rgba(22, 40, 27, .9); color: var(--paper); }
+.flip .half i { display: block; height: var(--h); line-height: var(--h); text-align: center; font-style: normal; }
+.flip .top { top: 0; border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(0, 0, 0, .45); }
+.flip .bottom { bottom: 0; border-radius: 0 0 6px 6px; }
+.flip .bottom i { margin-top: calc(var(--h) / -2); }
+.flip .flap { display: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.flip.flipping .flap { display: block; }
+.flip.flipping .top.flap { transform-origin: bottom; animation: flip-top .3s ease-in forwards; }
+.flip.flipping .bottom.flap { transform-origin: top; transform: rotateX(90deg); animation: flip-bottom .3s ease-out .3s forwards; }
+@keyframes flip-top { to { transform: rotateX(-90deg); } }
+@keyframes flip-bottom { to { transform: rotateX(0); } }
+.hero p.countdown-now { margin: 0; font-size: 17px; font-weight: 700; color: var(--ink-deep); }
+@media (max-width: 620px) {
+  .flip-clock { gap: 10px; }
+  .flip { --h: 40px; width: 29px; font-size: 26px; }
+}
+
 .hero .icons { margin-top: 12px; justify-content: center; }
 
 /* Sekcje */

@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import EventCard from '../components/EventCard.astro';
 import Icon from '../components/Icon.astro';
 import JsonLd from '../components/JsonLd.astro';
+import Countdown from '../components/Countdown.astro';
 import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { site } from '../data/site';
@@ -74,6 +75,7 @@ const structuredData = [groupSchema(Astro.site!), ...(await Promise.all(upcoming
           <a href={heroTickets} class="btn" target="_blank" rel="noopener">{nextHasTickets
             ? <>{next.subtitle ? `Bilety · ${next.subtitle} · ${shortDate(next.date)}` : `Bilety na ${shortDate(next.date)}`}<span class="sr">, {next.title}</span></>
             : 'Kup bilety'}</a>
+          {nextHasTickets && <Countdown date={next.date} time={next.time} />}
           <div class="icons">
             {site.socials.map((s) => (
               <a href={s.url} class="icon-link" aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} /></a>

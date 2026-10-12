@@ -1,0 +1,94 @@
+---
+// Odliczanie do spektaklu jako flip clock (w hero pod przyciskiem z biletami): dni, godziny, minuty, sekundy.
+// Liczy przeglądarka, bo strona jest statyczna; przy buildzie trafiają tu tylko początek i koniec spektaklu
+// z przesunięciem strefy Warszawy. W trakcie spektaklu „Właśnie gramy!”, po końcu znika (do nocnej przebudowy
+// przycisk wciąż pokazuje ten spektakl). Bez JS go nie ma; przy „ogranicz ruch” cyfry zmieniają się bez przewracania.
+import { endIso, startIso } from '../lib/events';
+
+interface Props { date: string; time: string }
+const { date, time } = Astro.props;
+---
+<div class="countdown" data-start={startIso(date, time)} data-end={endIso(date, time)} hidden>
+  <div class="flip-clock" aria-hidden="true"></div>
+  <p class="countdown-now" hidden>Właśnie gramy!</p>
+  <span class="sr"></span>
+</div>
+
+<!-- Zaraz po elemencie, żeby zegar był gotowy przed pierwszym wyświetleniem (bez przeskoku treści) -->
+<script is:inline>
+  (function () {
+    var root = document.querySelector('.countdown');
+    var clock = root.querySelector('.flip-clock'), now = root.querySelector('.countdown-now'), sr = root.querySelector('.sr');
+    var start = Date.parse(root.dataset.start), end = Date.parse(root.dataset.end);
+    var still = matchMedia('(prefers-reduced-motion: reduce)');
+    var SEC = 1000, MIN = 60 * SEC, HOUR = 60 * MIN, DAY = 24 * HOUR;
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var UNITS = [
+      { label: function (n) { return n === 1 ? 'dzień' : 'dni'; }, value: function (l) { return Math.floor(l / DAY); } },
+      { label: function () { return 'godz.'; }, value: function (l) { return Math.floor(l % DAY / HOUR); } },
+      { label: function () { return 'min'; }, value: function (l) { return Math.floor(l % HOUR / MIN); } },
+      { label: function () { return 'sek'; }, value: function (l) { return Math.floor(l % MIN / SEC); } },
+    ];
+
+    // Jedna cyfra = dwie nieruchome połówki (góra: nowa, dół: stara) i dwie klapki, które się przewracają:
+    // górna ze starą cyfrą opada, dolna z nową dokłada się od dołu. Połówki pokazują górę/dół tej samej cyfry.
+    function digit() {
+      var el = document.createElement('span');
+      el.className = 'flip';
+      el.innerHTML = '<span class="half top"><i></i></span><span class="half bottom"><i></i></span>'
+        + '<span class="half top flap"><i></i></span><span class="half bottom flap"><i></i></span>';
+      el.addEventListener('animationend', function (e) {
+        if (!e.target.classList.contains('bottom')) return;
+        set(el, 1, el.dataset.v);
+        el.classList.remove('flipping');
+      });
+      return el;
+    }
+    function set(el, k, v) { el.children[k].firstChild.textContent = v; }
+    function show(el, v) {
+      var old = el.dataset.v;
+      if (old === v) return;
+      el.dataset.v = v;
+      if (old === undefined || still.matches) { [0, 1, 2, 3].forEach(function (k) { set(el, k, v); }); return; }
+      set(el, 0, v); set(el, 1, old); set(el, 2, old); set(el, 3, v);
+      el.classList.remove('flipping');
+      void el.offsetWidth; // restart animacji, gdy poprzednia jeszcze trwa
+      el.classList.add('flipping');
+    }
+
+    var groups = UNITS.map(function () {
+      var g = document.createElement('span');
+      g.className = 'flip-group';
+      g.innerHTML = '<span class="flip-digits"></span><span class="flip-label"></span>';
+      clock.appendChild(g);
+      return g;
+    });
+
+    function render(left) {
+      UNITS.forEach(function (u, i) {
+        var n = u.value(left), text = i === 0 && n > 99 ? String(n) : pad(n);
+        var digits = groups[i].firstChild;
+        while (digits.children.length < text.length) digits.appendChild(digit());
+        while (digits.children.length > text.length) digits.removeChild(digits.lastChild);
+        Array.prototype.forEach.call(digits.children, function (d, k) { show(d, text[k]); });
+        groups[i].lastChild.textContent = u.label(n);
+      });
+      // Dla czytników ekranu wystarczy dokładność do minuty
+      var d = UNITS[0].value(left), h = UNITS[1].value(left), m = UNITS[2].value(left);
+      var t = 'Do spektaklu ' + (d ? d + ' ' + UNITS[0].label(d) + ' ' : '') + h + ' godz. ' + m + ' min';
+      if (sr.textContent !== t) sr.textContent = t;
+    }
+
+    function tick() {
+      var t = Date.now(), left = start - t;
+      root.hidden = t >= end;
+      clock.hidden = left <= 0;
+      now.hidden = left > 0;
+      if (t >= end) clearInterval(timer);
+      else if (left > 0) render(left);
+      else sr.textContent = '';
+    }
+    var timer = setInterval(tick, SEC);
+    tick();
+  })();
+</script>
